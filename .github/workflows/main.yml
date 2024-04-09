@@ -1,1 +1,17 @@
+name: Node.js Deploy Pipeline
 
+on: 
+  push:
+    branches:
+      - production
+  workflow_dispatch:
+    inputs:
+      runType:
+        type: choice
+        required: true
+        description: ''
+        default: 'デプロイ'
+        options:
+          - 'デプロイ'
+          - 'アプリケーション　再起動'
+          - 'アプリケーション　停止'
