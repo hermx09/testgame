@@ -13,8 +13,8 @@ on:
         default: 'デプロイ'
         options:
           - 'デプロイ'
-          - 'アプリケーション　再起動'
-          - 'アプリケーション　停止'
+          - 'アプリケーション 再起動'
+          - 'アプリケーション 停止'
 jobs:
   kill_process:
     runs-on: ubuntu-latest
@@ -66,6 +66,26 @@ jobs:
         run:
           echo "$PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
-          ssh -o StrictKeyCheck=no -i private_key.pem $USER@$HOST "rm -r -f /sample-app && mkdir /home/ec2-user/sample-app &"
-          ssh -0 StrictKeyCheck=no -i private_key.pem $USER@HOST "mkdir -p /home/ec2-user/sample-app-log &"
-          echo "put -r ./dist ./sample-app/dist" | sftp -i private_key.pem $USER@$HOST
+          ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST "rm -r -f /testgame && mkdir /home/ec2-user/testgame &"
+          ssh -0 StrictHostKeyChecking=no -i private_key.pem $USER@HOST "mkdir -p /home/ec2-user/testgame-log &"
+          echo "put -r ./dist ./testgame/dist" | sftp -i private_key.pem $USER@$HOST
+          ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST "volta install node@18.17.1 && npm ci --production --prefix /home/ec2-user/testgame"
+          ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST "NODE_ENV=production nohup npm run start --prefix /home/ec2-user/testgame > /home/ec2-user/testgame-log/nohup-$(date +%Y%m%d%H%M).log 2>&1 &"
+          
+  just_start_process:
+    if: github.event.inputs.runType == 'アプリケーション 再起動'
+    needs: kill_process
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update OpenSSL
+        run: sudo apt-get update && sudo apt-get install -y openssl
+        
+      - name: Restart Application   
+        env:
+          HOST: ${{secrets.EC2_HOST}}
+          USER: ${{secrets.EC2_USER}}
+          PRIVATE_KEY: ${{secrets.EC2_SSH_PRIVATE_KEY}}
+        run:
+          echo "$PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST "NODE_ENV=production nohup nom run start --prefix /home/ec2-user/testgame > /home/ec2-user/testgame-log/nohup-$(date +%Y%m%d%H%M).log 2>&1 &"
