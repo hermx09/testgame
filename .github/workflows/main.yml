@@ -15,3 +15,57 @@ on:
           - 'デプロイ'
           - 'アプリケーション　再起動'
           - 'アプリケーション　停止'
+jobs:
+  kill_process:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update OpenSSL
+        run: sudo apt-get update && sudo apt-get install -y openssl
+
+      - name: Down Process
+        env:
+          HOST: ${{secrets.EC2_HOST}}
+          USER: ${{secrets.EC2_USER}}
+          PRIVATE_KEY: ${{secrets.EC2_SSH_PRIVATE_KEY}}
+        run:
+          echo "$PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST "pkill ^node$ &"
+          
+  deploy_and_start_process:
+    if: github.event_name == 'push' || github.event.inputs.runType == 'デプロイ'
+    needs: kill_process
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Update OpenSSL
+        run: sudo apt-get update && sudo apt-get install -y openssl
+
+      - name: Checkout code to production branch
+        uses: actions/checkout@v4
+        with:
+          ref: production
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.17.1
+
+      - name: Install Dependencies and Build
+        env:
+          NODE_ENV: production
+        run:
+          npm ci
+          npm run build
+
+      - name: Deploy to EC2
+        env: 
+          HOST: ${{secrets.EC2_HOST}}
+          USER: ${{secrets.EC2_USER}}
+          PRIVATE_KEY: ${{secrets.EC2_SSH_PRIVATE_KEY}}
+        run:
+          echo "$PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          ssh -o StrictKeyCheck=no -i private_key.pem $USER@$HOST "rm -r -f /sample-app && mkdir /home/ec2-user/sample-app &"
+          ssh -0 StrictKeyCheck=no -i private_key.pem $USER@HOST "mkdir -p /home/ec2-user/sample-app-log &"
+          echo "put -r ./dist ./sample-app/dist" | sftp -i private_key.pem $USER@$HOST
