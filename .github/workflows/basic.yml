@@ -31,7 +31,7 @@ jobs:
 
       - name: Deploy
         run:
-          aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC"_SEQURITY_GROUP_ID }} --protocol tcp --port 22 -cidr ${{ steps.ip.outputs.ipv4 }}/32
+          aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SEQURITY_GROUP_ID }} --protocol tcp --port 22 -cidr ${{ steps.ip.outputs.ipv4 }}/32
           echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
           chmod 600 private_key
           ssh -oStrictHostKeyChecking=no ${{secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd React && git pull origin main"
