@@ -1,4 +1,22 @@
 <!DOCTYPE html>
 <html>
-    
+    <head lang = "ja">
+        <meta charset = "utf-8">
+        <meta http-equiv = "X-UA-Compatible" content = "IE-edge">
+        <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
+        <link rel = "stylesheet" href = "./score.css">
+        <title>Score</title>
+    </head>
+    <body class = "back">
+        <h1>ハイスコア</h1>
+        <div class = "par">
+          <h1 class = "form">名前を入力してください</h1>
+          <form id = "form">
+              <input type = "text" id = "name">
+              <input type = "button" id = "button" value = "送信">
+          </form>
+          <h1>press esc to return home!</h1>
+        </div>
+        <script type = "module" src = "./scorefunc.mjs"></script>
+    </body>
 </html>

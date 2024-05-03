@@ -1,8 +1,10 @@
 {
   "dependencies": {
     "body-parser": "^1.20.2",
+    "esm": "^3.2.25",
     "http": "^0.0.1-security",
     "mysql": "^2.18.1"
   },
-  "type": "module"
+  "type": "module",
+  "main": "./basic.js"
 }
