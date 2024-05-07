@@ -7,13 +7,13 @@ on:
 
   workflow_dispatch:
   
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Public IP Install
         id: ip
